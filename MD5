@@ -1,0 +1,16 @@
+57ebb5c928242e76633aab8be28482ad *DESCRIPTION
+0f6c2969568d1f4f5f7fe7175363ed58 *NAMESPACE
+0ace9036ebb3d9e28138cd039295f635 *R/critical_path.R
+65e229714a8053296f05923ceb9f502b *R/data.R
+94ad8711cb8229d8a037930b17a3212d *R/utility_functions.R
+f5ac947444b5eabf6b500e89e4555ba7 *data/taskdata1.rda
+9478460df6771c7a47021b891255cf9e *data/taskdata2.rda
+479f2913558fa1105bc660a8b3751e86 *man/critical_path.Rd
+cea8c2f77111a75127c2e46faca6481e *man/gantt.Rd
+32d44b75b415c9138b3acb17def0eda7 *man/network_diagram.Rd
+1df346414c51c4b80ebb1b9e157f4332 *man/taskdata1.Rd
+eca459bb3412389063c6fb8078533e2e *man/taskdata2.Rd
+0e4badc2253d6bb0bb6622389800d789 *tests/testthat.R
+3537e7b13af8c2a0392fba80d2a24b9d *tests/testthat/Rplots.pdf
+edfdf01535de311ad0af5f22802b2f0f *tests/testthat/testtaskdata1.R
+67f24eaee9ec1936fe43871f9d725ce5 *tests/testthat/testtaskdata2.R
