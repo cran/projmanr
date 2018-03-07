@@ -23,6 +23,7 @@
 #'
 #' @export
 critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
+  start_date <- as.Date(start_date)
   data <- df[, 1:4]
   all_tasks <- list()
   for(i in 1:nrow(data)){
@@ -88,7 +89,7 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 
   # If gantt is true, add network diagram to results
   if(gantt){
-    ret$gantt <- gantt(ret)
+    ret$gantt <- gantt(ret, start_date = start_date)
   }
 
   ret$total_duration <- sum((ret$results)[(ret$results)$is_critical,]$duration)
@@ -127,7 +128,11 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #'
 #' @export
 gantt <- function(df, start_date = Sys.Date()){
+
   raw = F
+
+  # Ensure start date type is correct
+  start_date <- as.Date(start_date)
 
   # LOOK AT THESE CONDITIONS
   if(length(ncol(df) > 0)){
@@ -183,7 +188,7 @@ gantt <- function(df, start_date = Sys.Date()){
       new_ids <- c("%id_source%", sorted_ids, "%id_sink%")
 
       # Perform the walk ahead
-      walk_ahead(all_tasks, new_ids, start_date)
+      walk_ahead(all_tasks, new_ids, start_date = start_date)
 
       df <- to_data_frame(all_tasks)
     }
@@ -236,7 +241,7 @@ gantt <- function(df, start_date = Sys.Date()){
       ggplot2::ylab("Task ID")
   }else{
     duration <- sum(df[df$is_critical, ]$duration)
-    end_date <- start_date + duration
+    end_date <- as.Date(start_date) + duration
 
     p <- ggplot2::ggplot(mdfr, ggplot2::aes(mdfr$value, mdfr$name)) +
       ggplot2::geom_line(ggplot2::aes(colour = mdfr$critical), size = 8) +
@@ -259,6 +264,8 @@ gantt <- function(df, start_date = Sys.Date()){
 #' If the data is raw, if must have columns "ID, name, duration, dependencies"
 #' in that order. These columns need not be named but they must be in that order.
 #' Type 'taskdata1' into the console for an example of raw data.
+#' @param use_name_as_label Boolean specifying whether to use the task name
+#' as the label for the network diagram. The default is to use the task ID.
 #' @return A network diagram for the tasks. If data has been processed by the critical path function,
 #' then this network diagram will color the critical path elements.
 #' @examples
@@ -273,7 +280,7 @@ gantt <- function(df, start_date = Sys.Date()){
 #' network_diagram(res)
 #'
 #' @export
-network_diagram <- function(df){
+network_diagram <- function(df, use_name_as_label=FALSE){
   raw = F
 
   # LOOK AT THESE CONDITIONS
@@ -324,8 +331,23 @@ network_diagram <- function(df){
       }
     }
     igraph::V(graph)$color <- "#41a9f4"
-    graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
-
+    # Plot the diagram, labeling the nodes according to "use_names_as_labels"
+    if(use_name_as_label){
+      # Get labels in the correct order
+      labels <-  c()
+      sizes <- vector(mode="integer")
+      for(elem in igraph::V(graph)$name){
+        label <- as.character(data[as.character(data[[1]]) == elem, 2])
+        labels <- c(labels, label)
+        sizes <- c(sizes, 9 * nchar(label))
+      }
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = sizes, 
+                     vertex.size2 = 15, edge.arrow.size = 0.65, vertex.label = labels)
+    }
+    else{
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle", 
+                     vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
+    }
   }
   else{
     res <- df$results
@@ -354,8 +376,22 @@ network_diagram <- function(df){
       }
     }
 
-    graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = 20,
-         vertex.size2 = 15, edge.arrow.size = 0.65)
+    # Plot the diagram, labeling the nodes according to "use_names_as_labels"
+    if(use_name_as_label){
+      labels <-  c()
+      sizes <- vector(mode="integer")
+      for(elem in igraph::V(graph)$name){
+        label <- as.character(res[as.character(res[[1]]) == elem, 2])
+        labels <- c(labels, label)
+        sizes <- c(sizes, 9 * nchar(label))
+      }
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = sizes, 
+                     vertex.size2 = 15, edge.arrow.size = 0.65, vertex.label = labels)
+    }
+    else{
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle", 
+                     vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
+    }
   }
   p <- grDevices::recordPlot()
   p
